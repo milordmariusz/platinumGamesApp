@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, View, StyleSheet, Text, TextInput, Button, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { KeyboardAvoidingView, View, StyleSheet, Text, TextInput, Button, TouchableOpacity, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
@@ -53,24 +53,26 @@ const Login = ({ navigation }: any) => {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <KeyboardAvoidingView style={styles.container} behavior='padding'>
-                <View style={styles.inputContainer}>
-                    <TextInput placeholder="Email" value={email} onChangeText={text => setEmail(text)} style={styles.input} />
-                    <TextInput placeholder="Password" value={password} onChangeText={text => setPassword(text)} style={styles.input} secureTextEntry />
-                </View>
+            <KeyboardAvoidingView style={styles.container} behavior='height'>
+                <View style={styles.inner}>
+                    <View style={styles.inputContainer}>
+                        <TextInput placeholder="Email" value={email} onChangeText={text => setEmail(text)} style={styles.input} />
+                        <TextInput placeholder="Password" value={password} onChangeText={text => setPassword(text)} style={styles.input} secureTextEntry />
+                    </View>
 
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        onPress={handleLogin}
-                        style={styles.button}
-                    >
-                        <Text style={styles.buttonText}>Login</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={handleSignUp}
-                        style={[styles.button, styles.buttonOutline]}>
-                        <Text style={styles.buttonOutlineText}>Register</Text>
-                    </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            onPress={handleLogin}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText}>Login</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleSignUp}
+                            style={[styles.button, styles.buttonOutline]}>
+                            <Text style={styles.buttonOutlineText}>Register</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
@@ -81,6 +83,10 @@ export default Login
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+        
+    },
+    inner: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
