@@ -93,7 +93,7 @@ const List = ({ navigation }: any) => {
     };
 
     const handleChangeText = async (value: string) => {
-        if (value.length > 1) {
+        if (value.length > 2) {
             fetch(`https://api.rawg.io/api/games?search=${value}&key=${API_KEY}`)
                 .then((response) => response.json())
                 .then((json) => {
@@ -123,11 +123,11 @@ const List = ({ navigation }: any) => {
                     <AutocompleteInput
                         inputContainerStyle = {styles.input}
                         listContainerStyle={{ zIndex: 1, position: 'absolute', paddingTop: 50, paddingLeft: 5 }}
-                        data={searchResults.map(result => result.name)}
+                        data={searchResults.slice(0,4).map(result => result.name)}
                         placeholder='Add new game'
                         onChangeText={(text: string) => {
                             handleChangeText(text)
-                            if (text.length < 2) {
+                            if (text.length < 3) {
                                 setSearchResults([]);
                             }
                         }
@@ -139,12 +139,12 @@ const List = ({ navigation }: any) => {
                             keyboardShouldPersistTaps='handled'
                                 data={item.data}
                                 renderItem={(game) => {
-                                    return <TouchableOpacity
+                                    return <TouchableOpacity style={styles.autocompleteItem}
                                         onPress={() => {
                                             setGame(game.item);
                                             setSearchResults([]);
                                         }}>
-                                        <Text style={[styles.buttonOutlineText, styles.autocompleteItem]}>
+                                        <Text style={styles.buttonOutlineText}>
                                             {game.item}
                                         </Text>
                                     </TouchableOpacity>;
@@ -254,6 +254,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     autocompleteItem: { 
-        backgroundColor: "#ffffff" 
+        backgroundColor: "#ffffff" ,
+        padding: 5,
+        borderColor: '#C0C0C0',
+        borderWidth: 1,
     }
 });
