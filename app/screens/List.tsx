@@ -1,13 +1,13 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { FIREBASE_AUTH, FIREBASE_DB, auth } from '../../firebaseConfig';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { Entypo } from '@expo/vector-icons'
 import { signOut } from 'firebase/auth';
 import { StackActions } from '@react-navigation/native';
 import AutocompleteInput from 'react-native-autocomplete-input';
-import {API_KEY} from '@env';
+import { API_KEY } from '@env';
 
 
 export interface Game {
@@ -34,38 +34,54 @@ const List = ({ navigation }: any) => {
         const user = FIREBASE_AUTH.currentUser;
         if (user) {
             const gameRef = collection(FIREBASE_DB, 'users', user.uid, 'games');
-            const subscriber = onSnapshot(gameRef, {
-                next: (snapshot) => {
-                    const games: Game[] = [];
-                    snapshot.docs.forEach((doc) => {
-                        games.push({
-                            id: doc.id,
-                            ...doc.data(),
-                        } as Game);
-                    });
-                    setGames(games);
-                },
-            });
+            const subscriber = onSnapshot(
+                query(gameRef, orderBy('createdAt', 'desc')),
+                {
+                    next: (snapshot) => {
+                        const games: Game[] = [];
+                        snapshot.docs.forEach((doc) => {
+                            games.push({
+                                id: doc.id,
+                                ...doc.data(),
+                            } as Game);
+                        });
+                        setGames(games);
+                    },
+                    error: (error) => console.log(error),
+                }
+            );
             return () => subscriber();
         }
     }, []);
 
+
     const addGame = async () => {
-        if(isSaving){
+        if (isSaving) {
             return;
         }
+
         setIsSaving(true);
-        const gameTitle = game
-        setGame('');
-        Keyboard.dismiss();
-        setSearchResults([]);
-        const user = FIREBASE_AUTH.currentUser;
-        if (user) {
-            const doc = await addDoc(collection(FIREBASE_DB, 'users', user.uid, 'games'), {
+
+        try {
+            const user = FIREBASE_AUTH.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const gameTitle = game;
+            setGame('');
+            Keyboard.dismiss();
+            setSearchResults([]);
+
+            await addDoc(collection(FIREBASE_DB, 'users', user.uid, 'games'), {
                 title: gameTitle,
                 completed: false,
+                createdAt: serverTimestamp(),
             });
+        } catch (error) {
+            console.error('Error adding game:', error);
         }
+
         setIsSaving(false);
     };
 
@@ -128,9 +144,9 @@ const List = ({ navigation }: any) => {
                 </View>
                 <View style={[styles.form, { zIndex: 1 }]}>
                     <AutocompleteInput
-                        inputContainerStyle = {styles.input}
+                        inputContainerStyle={styles.input}
                         listContainerStyle={{ zIndex: 1, position: 'absolute', paddingTop: 50, paddingLeft: 5 }}
-                        data={searchResults.slice(0,4).map(result => result.name)}
+                        data={searchResults.slice(0, 4).map(result => result.name)}
                         placeholder='Add new game'
                         onChangeText={(text: string) => {
                             handleChangeText(text)
@@ -143,7 +159,7 @@ const List = ({ navigation }: any) => {
                         renderResultList={(item: any) => {
 
                             return <FlatList
-                            keyboardShouldPersistTaps='handled'
+                                keyboardShouldPersistTaps='handled'
                                 data={item.data}
                                 renderItem={(game) => {
                                     return <TouchableOpacity style={styles.autocompleteItem}
@@ -167,12 +183,12 @@ const List = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </View>
                 {games.length > 0 && (
-                        <FlatList
+                    <FlatList
                         keyboardShouldPersistTaps='handled'
-                            data={games}
-                            renderItem={(item) => renderGame(item)}
-                            keyExtractor={(game: Game) => game.id}
-                        />
+                        data={games}
+                        renderItem={(item) => renderGame(item)}
+                        keyExtractor={(game: Game) => game.id}
+                    />
 
                 )}
             </View>
@@ -260,8 +276,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    autocompleteItem: { 
-        backgroundColor: "#ffffff" ,
+    autocompleteItem: {
+        backgroundColor: "#ffffff",
         padding: 5,
         borderColor: '#C0C0C0',
         borderWidth: 1,
