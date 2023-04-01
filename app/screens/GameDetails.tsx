@@ -5,13 +5,35 @@ import { doc, updateDoc } from "firebase/firestore";
 
 const GameDetails = ({ route, navigation }: { route: any, navigation: any }) => {
   const [gameTitle, setGameTitle] = useState(route.params.gameTitle);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // const handleSaveChanges = async () => {
+  //   const user = FIREBASE_AUTH.currentUser;
+  //   if (user) {
+  //     const ref = doc(FIREBASE_DB, `users/${user.uid}/games/${route.params.gameId}`);
+  //     await updateDoc(ref, { title: gameTitle });
+  //     navigation.goBack();
+  //   }
+  // };
 
   const handleSaveChanges = async () => {
-    const user = FIREBASE_AUTH.currentUser;
-    if (user) {
-      const ref = doc(FIREBASE_DB, `users/${user.uid}/games/${route.params.gameId}`);
-      await updateDoc(ref, { title: gameTitle });
-      navigation.goBack();
+    if (isSaving) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const user = FIREBASE_AUTH.currentUser;
+      if (user) {
+        const ref = doc(FIREBASE_DB, `users/${user.uid}/games/${route.params.gameId}`);
+        await updateDoc(ref, { title: gameTitle });
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
     }
   };
 

@@ -10,6 +10,7 @@ const SignUp = () => {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [signingUp, setSigningUp] = useState(false);
 
     const handleSignUp = async () => {
         if (password !== confirmPassword) {
@@ -17,13 +18,25 @@ const SignUp = () => {
             return;
         }
 
-        createUserWithEmailAndPassword(auth, email, password).then(userCredential => {
-            const user = userCredential.user;
-            console.log("Registered in with:", user.email);
-            updateProfile(user, {displayName: name}).then(()=>{
-                navigation.goBack();
-        })
-        }).catch(error => alert(error.message));
+        if (signingUp) {
+            return;
+          }
+
+          try{
+            createUserWithEmailAndPassword(auth, email, password).then(userCredential => {
+                const user = userCredential.user;
+                console.log("Registered in with:", user.email);
+                updateProfile(user, {displayName: name}).then(()=>{
+                    navigation.goBack();
+                })
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                alert(error.message);
+              }
+          } finally {
+            setSigningUp(false);
+          }
     }
 
     return (
