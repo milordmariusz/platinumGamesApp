@@ -20,6 +20,7 @@ const List = ({ navigation }: any) => {
     const [games, setGames] = useState<Game[]>([]);
     const [game, setGame] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSignOut = async () => {
         signOut(auth).then(() => {
@@ -50,16 +51,22 @@ const List = ({ navigation }: any) => {
     }, []);
 
     const addGame = async () => {
+        if(isSaving){
+            return;
+        }
+        setIsSaving(true);
+        const gameTitle = game
+        setGame('');
+        Keyboard.dismiss();
+        setSearchResults([]);
         const user = FIREBASE_AUTH.currentUser;
         if (user) {
             const doc = await addDoc(collection(FIREBASE_DB, 'users', user.uid, 'games'), {
-                title: game,
+                title: gameTitle,
                 completed: false,
             });
-            Keyboard.dismiss();
-            setSearchResults([]);
-            setGame('');
         }
+        setIsSaving(false);
     };
 
     const renderGame = ({ item }: any) => {
@@ -93,7 +100,7 @@ const List = ({ navigation }: any) => {
     };
 
     const handleChangeText = async (value: string) => {
-        if (value.length > 2) {
+        if (value.length > 1) {
             fetch(`https://api.rawg.io/api/games?search=${value}&key=${API_KEY}`)
                 .then((response) => response.json())
                 .then((json) => {
@@ -127,7 +134,7 @@ const List = ({ navigation }: any) => {
                         placeholder='Add new game'
                         onChangeText={(text: string) => {
                             handleChangeText(text)
-                            if (text.length < 3) {
+                            if (text.length < 2) {
                                 setSearchResults([]);
                             }
                         }
