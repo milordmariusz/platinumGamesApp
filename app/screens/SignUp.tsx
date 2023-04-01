@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { useNavigation } from '@react-navigation/core';
+import { FirebaseError } from 'firebase/app';
 
 const SignUp = () => {
     const navigation = useNavigation();
@@ -13,6 +14,11 @@ const SignUp = () => {
     const [signingUp, setSigningUp] = useState(false);
 
     const handleSignUp = async () => {
+        if (!email || !name || !password || !confirmPassword) {
+            alert('Please fill in all fields');
+            return;
+        }
+
         if (password !== confirmPassword) {
             alert("Passwords do not match");
             return;
@@ -20,23 +26,38 @@ const SignUp = () => {
 
         if (signingUp) {
             return;
-          }
+        }
 
-          try{
+        try {
             createUserWithEmailAndPassword(auth, email, password).then(userCredential => {
                 const user = userCredential.user;
                 console.log("Registered in with:", user.email);
-                updateProfile(user, {displayName: name}).then(()=>{
+                updateProfile(user, { displayName: name }).then(() => {
                     navigation.goBack();
                 })
+            }).catch((error) => {
+                let errorMessage = "An error occurred. Please try again.";
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Email already in use';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Password should be at least 6 characters';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error';
+                        break;
+                    default:
+                        break;
+                }
+                alert(errorMessage);
             });
-        } catch (error) {
-            if (error instanceof Error) {
-                alert(error.message);
-              }
-          } finally {
+        } finally {
             setSigningUp(false);
-          }
+        }
     }
 
     return (
