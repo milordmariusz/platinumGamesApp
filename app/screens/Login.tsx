@@ -14,12 +14,41 @@ const Login = ({ navigation }: any) => {
     }
 
     const handleLogin = () => {
+        if (password === '' || email === '') {
+            alert("Please fill in the login fields.");
+            return;
+        }
+
         signInWithEmailAndPassword(auth, email, password).then(userCredential => {
             const user = userCredential.user;
             console.log("Logged in with:", user.email);
             const resetAction = StackActions.replace('Platinum Games');
             navigation.dispatch(resetAction);
-        }).catch(error => alert(error.message));
+        }).catch((error) => {
+            let errorMessage = "An error occurred. Please try again.";
+            switch (error.code) {
+                case "auth/user-not-found":
+                    errorMessage = "User not found. Please check your email and try again.";
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = "The email address is not valid.";
+                    break;
+                case "auth/wrong-password":
+                    errorMessage = "Invalid password. Please check your password and try again.";
+                    break;
+                case "auth/too-many-requests":
+                    errorMessage =
+                        "Too many unsuccessful login attempts. Please try again later.";
+                    break;
+                case "auth/network-request-failed":
+                    errorMessage =
+                        "A network error occurred. Please check your internet connection and try again.";
+                    break;
+                default:
+                    break;
+            }
+            alert(errorMessage);
+        });
     }
 
     return (
