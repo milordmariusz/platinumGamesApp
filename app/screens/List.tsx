@@ -8,6 +8,7 @@ import { signOut } from 'firebase/auth';
 import { StackActions } from '@react-navigation/native';
 import AutocompleteInput from 'react-native-autocomplete-input';
 import { API_KEY } from '@env';
+import { RadioButton } from 'react-native-paper';
 
 
 export interface Game {
@@ -22,6 +23,7 @@ const List = ({ navigation }: any) => {
     const [game, setGame] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [filter, setFilter] = useState('all');
 
     const handleSignOut = async () => {
         signOut(auth).then(() => {
@@ -134,15 +136,50 @@ const List = ({ navigation }: any) => {
     }
 
     const searchGame = async (value: string) => {
-        if(value.length < 1){
+        if (value.length < 1) {
             setGames(gamesCopy);
         } else {
-            console.log(value,"dddd");
             const gamesFiltered = games.filter(game => {
                 return game.title.toLowerCase().includes(value.toLowerCase());
             })
             setGames(gamesFiltered);
         }
+    }
+
+    const filterGames = async (value: string) => {
+        setGames(gamesCopy);
+        if (value === "finished") {
+            const gamesFiltered = games.filter(game => {
+                return game.completed == true;
+            })
+            setGames(gamesFiltered);
+        }
+        if (value === "unfinished") {
+            const gamesFiltered = games.filter(game => {
+                return game.completed == false;
+            })
+            setGames(gamesFiltered);
+        }
+    }
+
+    function gamesFiltered (): Game[] {
+        if (filter ==="all") {
+            return games;
+        }
+        if (filter === "finished") {
+            const gamesFiltered = games.filter(game => {
+                return game.completed == true;
+            })
+            return gamesFiltered;
+        }
+        if (filter === "unfinished") {
+            const gamesFiltered = games.filter(game => {
+                return game.completed == false;
+            })
+            return gamesFiltered;
+        }
+
+        return[];
     }
 
 
@@ -198,18 +235,43 @@ const List = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.searchForm}>
-                    <Ionicons name='search-outline' size={20} color="black" style={{paddingRight: 5}}/>
-                    <TextInput 
-                        style={styles.searchInput} 
+                    <Ionicons name='search-outline' size={20} color="black" style={{ paddingRight: 5 }} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder='Search game'
                         onChangeText={(text: string) => {
                             searchGame(text);
                         }
-                    } />
+                        } />
+                </View>
+                <View>
+                    <RadioButton.Group
+                        onValueChange={value => {
+                            setFilter(value)
+                            //filterGames(value);
+                        }
+                        }
+                        value={filter}>
+                        <View style={styles.radioButtons}>
+                            <View style={styles.radioButton}>
+                                <Text>All</Text>
+                                <RadioButton value="all" color='#0782F9'/>
+                            </View>
+                            <View style={styles.radioButton}>
+                                <Text>Finished</Text>
+                                <RadioButton value="finished" color='#0782F9'/>
+                            </View>
+                            <View style={styles.radioButton}>
+                                <Text>Unfinished</Text>
+                                <RadioButton value="unfinished" color='#0782F9'/>
+                            </View>
+                        </View>
+                    </RadioButton.Group>
                 </View>
                 {games.length > 0 && (
                     <FlatList
                         keyboardShouldPersistTaps='handled'
-                        data={games}
+                        data={gamesFiltered()}
                         renderItem={(item) => renderGame(item)}
                         keyExtractor={(game: Game) => game.id}
                     />
@@ -293,6 +355,15 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 10,
         paddingLeft: 10,
+    },
+    radioButtons: {
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    radioButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     gameContainer: {
         borderRadius: 10,

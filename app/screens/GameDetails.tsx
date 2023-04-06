@@ -7,15 +7,6 @@ const GameDetails = ({ route, navigation }: { route: any, navigation: any }) => 
   const [gameTitle, setGameTitle] = useState(route.params.gameTitle);
   const [isSaving, setIsSaving] = useState(false);
 
-  // const handleSaveChanges = async () => {
-  //   const user = FIREBASE_AUTH.currentUser;
-  //   if (user) {
-  //     const ref = doc(FIREBASE_DB, `users/${user.uid}/games/${route.params.gameId}`);
-  //     await updateDoc(ref, { title: gameTitle });
-  //     navigation.goBack();
-  //   }
-  // };
-
   const handleSaveChanges = async () => {
     if (isSaving) {
       return;
