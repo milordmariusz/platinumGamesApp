@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TouchableWithoutFeedback, Keyboard, TextInput } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { FIREBASE_AUTH, FIREBASE_DB, auth } from '../../firebaseConfig';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { Entypo } from '@expo/vector-icons'
 import { signOut } from 'firebase/auth';
@@ -18,6 +18,7 @@ export interface Game {
 
 const List = ({ navigation }: any) => {
     const [games, setGames] = useState<Game[]>([]);
+    const [gamesCopy, setGamesCopy] = useState<Game[]>([]);
     const [game, setGame] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSaving, setIsSaving] = useState(false);
@@ -46,6 +47,7 @@ const List = ({ navigation }: any) => {
                             } as Game);
                         });
                         setGames(games);
+                        setGamesCopy(games);
                     },
                     error: (error) => console.log(error),
                 }
@@ -131,6 +133,19 @@ const List = ({ navigation }: any) => {
         setGame(value);
     }
 
+    const searchGame = async (value: string) => {
+        if(value.length < 1){
+            setGames(gamesCopy);
+        } else {
+            console.log(value,"dddd");
+            const gamesFiltered = games.filter(game => {
+                return game.title.toLowerCase().includes(value.toLowerCase());
+            })
+            setGames(gamesFiltered);
+        }
+    }
+
+
     return (
         <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss; setSearchResults([]); }} accessible={false}>
             <View style={styles.container}>
@@ -181,6 +196,15 @@ const List = ({ navigation }: any) => {
                         style={game === '' ? [styles.buttonDisabled, styles.buttonOutlineDisabled] : [styles.button, styles.buttonOutline]} disabled={game === ''}>
                         <Text style={game === '' ? styles.buttonOutlineTextDisabled : styles.buttonOutlineText}>Add game</Text>
                     </TouchableOpacity>
+                </View>
+                <View style={styles.searchForm}>
+                    <Ionicons name='search-outline' size={20} color="black" style={{paddingRight: 5}}/>
+                    <TextInput 
+                        style={styles.searchInput} 
+                        onChangeText={(text: string) => {
+                            searchGame(text);
+                        }
+                    } />
                 </View>
                 {games.length > 0 && (
                     <FlatList
@@ -252,12 +276,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    searchForm: {
+        marginBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     input: {
         flex: 1,
         backgroundColor: 'white',
         paddingHorizontal: 15,
         borderRadius: 10,
         marginRight: 10,
+    },
+    searchInput: {
+        flex: 1,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        paddingLeft: 10,
     },
     gameContainer: {
         borderRadius: 10,
