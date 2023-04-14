@@ -162,8 +162,8 @@ const List = ({ navigation }: any) => {
         }
     }
 
-    function gamesFiltered (): Game[] {
-        if (filter ==="all") {
+    function gamesFiltered(): Game[] {
+        if (filter === "all") {
             return games;
         }
         if (filter === "finished") {
@@ -179,7 +179,7 @@ const List = ({ navigation }: any) => {
             return gamesFiltered;
         }
 
-        return[];
+        return [];
     }
 
 
@@ -248,22 +248,21 @@ const List = ({ navigation }: any) => {
                     <RadioButton.Group
                         onValueChange={value => {
                             setFilter(value)
-                            //filterGames(value);
-                        }
+                            }
                         }
                         value={filter}>
                         <View style={styles.radioButtons}>
                             <View style={styles.radioButton}>
                                 <Text>All</Text>
-                                <RadioButton value="all" color='#0782F9'/>
+                                <RadioButton value="all" color='#0782F9' />
                             </View>
                             <View style={styles.radioButton}>
                                 <Text>Finished</Text>
-                                <RadioButton value="finished" color='#0782F9'/>
+                                <RadioButton value="finished" color='#0782F9' />
                             </View>
                             <View style={styles.radioButton}>
                                 <Text>Unfinished</Text>
-                                <RadioButton value="unfinished" color='#0782F9'/>
+                                <RadioButton value="unfinished" color='#0782F9' />
                             </View>
                         </View>
                     </RadioButton.Group>
